@@ -137,6 +137,8 @@ def on_exception(wait_gen: _WaitGenerator,
                  on_success: Union[_Handler, Iterable[_Handler], None] = None,
                  on_backoff: Union[_Handler, Iterable[_Handler], None] = None,
                  on_giveup: Union[_Handler, Iterable[_Handler], None] = None,
+                 monotonic_time: Optional[Callable[[], float]] = time.monotonic,
+                 sleep: Optional[Callable[[float], None]] = asyncio.sleep,
                  raise_on_giveup: bool = True,
                  logger: _MaybeLogger = 'backoff',
                  backoff_log_level: int = logging.INFO,
@@ -177,6 +179,8 @@ def on_exception(wait_gen: _WaitGenerator,
             signature to be called in the event that max_tries
             is exceeded.  The parameter is a dict containing details
             about the invocation.
+        monotonic_time: Callable. Clock to use
+        sleep: Sleep function to use.
         raise_on_giveup: Boolean indicating whether the registered exceptions
             should be raised on giveup. Defaults to `True`
         logger: Name or Logger object to log to. Defaults to 'backoff'.
@@ -221,6 +225,8 @@ def on_exception(wait_gen: _WaitGenerator,
             on_success=on_success,
             on_backoff=on_backoff,
             on_giveup=on_giveup,
+            monotonic_time=monotonic_time,
+            sleep=sleep,
             raise_on_giveup=raise_on_giveup,
             wait_gen_kwargs=wait_gen_kwargs
         )

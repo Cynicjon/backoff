@@ -12,6 +12,12 @@ backoff
 .. image:: https://img.shields.io/github/license/litl/backoff
     :target: https://github.com/litl/backoff/blob/master/LICENSE
 
+
+**Forked**
+
+This fork adds monotonic clock and support for custom sleep functions, equivalent to https://github.com/litl/backoff/pull/150
+This allows use of this module with alternate async loops like Trio.
+
 **Function decoration for backoff and retry**
 
 This module provides function decorators which can be used to wrap a
