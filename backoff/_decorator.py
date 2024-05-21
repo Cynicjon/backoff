@@ -2,6 +2,7 @@
 import asyncio
 import logging
 import operator
+import time
 from typing import Any, Callable, Iterable, Optional, Type, Union
 
 from backoff._common import (
@@ -33,8 +34,8 @@ def on_predicate(wait_gen: _WaitGenerator,
                  on_success: Union[_Handler, Iterable[_Handler], None] = None,
                  on_backoff: Union[_Handler, Iterable[_Handler], None] = None,
                  on_giveup: Union[_Handler, Iterable[_Handler], None] = None,
-                 monotonic_time: Optional[Callable[[], float]] = None,
-                 sleep: Optional[Callable[[float], None]] = None,
+                 monotonic_time: Optional[Callable[[], float]] = time.monotonic,
+                 sleep: Optional[Callable[[float], None]] = asyncio.sleep,
                  logger: _MaybeLogger = 'backoff',
                  backoff_log_level: int = logging.INFO,
                  giveup_log_level: int = logging.ERROR,
@@ -73,6 +74,8 @@ def on_predicate(wait_gen: _WaitGenerator,
             signature to be called in the event that max_tries
             is exceeded.  The parameter is a dict containing details
             about the invocation.
+        monotonic_time: Callable. Clock to use
+        sleep: Sleep function to use.
         logger: Name of logger or Logger object to log to. Defaults to
             'backoff'.
         backoff_log_level: log level for the backoff event. Defaults to "INFO"

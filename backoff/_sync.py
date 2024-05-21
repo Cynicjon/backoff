@@ -1,4 +1,5 @@
 # coding:utf-8
+import asyncio
 import functools
 import time
 
@@ -22,8 +23,8 @@ def retry_predicate(target, wait_gen, predicate,
                     *,
                     max_tries, max_time, jitter,
                     on_success, on_backoff, on_giveup,
-                    monotonic_time=None,
-                    sleep=None,
+                    monotonic_time=time.monotonic,
+                    sleep=asyncio.sleep,
                     wait_gen_kwargs):
 
     @functools.wraps(target)
@@ -32,11 +33,11 @@ def retry_predicate(target, wait_gen, predicate,
         max_time_value = _maybe_call(max_time)
 
         tries = 0
-        start = (monotonic_time or time.monotonic)()
+        start = monotonic_time()
         wait = _init_wait_gen(wait_gen, wait_gen_kwargs)
         while True:
             tries += 1
-            elapsed = (monotonic_time or time.monotonic)() - start
+            elapsed = monotonic_time() - start
             details = {
                 "target": target,
                 "args": args,
@@ -65,7 +66,7 @@ def retry_predicate(target, wait_gen, predicate,
                 _call_handlers(on_backoff, **details,
                                value=ret, wait=seconds)
 
-                (sleep or time.sleep)(seconds)
+                sleep(seconds)
                 continue
             else:
                 _call_handlers(on_success, **details, value=ret)
@@ -80,8 +81,8 @@ def retry_exception(target, wait_gen, exception,
                     *,
                     max_tries, max_time, jitter, giveup,
                     on_success, on_backoff, on_giveup, raise_on_giveup,
-                    monotonic_time=None,
-                    sleep=None,
+                    monotonic_time=time.monotonic,
+                    sleep=asyncio.sleep,
                     wait_gen_kwargs):
 
     @functools.wraps(target)
@@ -90,11 +91,11 @@ def retry_exception(target, wait_gen, exception,
         max_time_value = _maybe_call(max_time)
 
         tries = 0
-        start = (monotonic_time or time.monotonic)()
+        start = monotonic_time()
         wait = _init_wait_gen(wait_gen, wait_gen_kwargs)
         while True:
             tries += 1
-            elapsed = (monotonic_time or time.monotonic)() - start
+            elapsed = monotonic_time() - start
             details = {
                 "target": target,
                 "args": args,
@@ -126,7 +127,7 @@ def retry_exception(target, wait_gen, exception,
                 _call_handlers(on_backoff, **details, wait=seconds,
                                exception=e)
 
-                (sleep or time.sleep)(seconds)
+                sleep(seconds)
             else:
                 _call_handlers(on_success, **details)
 

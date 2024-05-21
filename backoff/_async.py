@@ -40,8 +40,8 @@ def retry_predicate(target, wait_gen, predicate,
                     *,
                     max_tries, max_time, jitter,
                     on_success, on_backoff, on_giveup,
-                    monotonic_time=None,
-                    sleep=None,
+                    monotonic_time=time.monotonic,
+                    sleep=asyncio.sleep,
                     wait_gen_kwargs):
     on_success = _ensure_coroutines(on_success)
     on_backoff = _ensure_coroutines(on_backoff)
@@ -61,11 +61,11 @@ def retry_predicate(target, wait_gen, predicate,
         max_time_value = _maybe_call(max_time)
 
         tries = 0
-        start = (monotonic_time or time.monotonic)()
+        start = monotonic_time()
         wait = _init_wait_gen(wait_gen, wait_gen_kwargs)
         while True:
             tries += 1
-            elapsed = (monotonic_time or time.monotonic)() - start
+            elapsed = monotonic_time() - start
             details = {
                 "target": target,
                 "args": args,
@@ -103,7 +103,7 @@ def retry_predicate(target, wait_gen, predicate,
                 # See for details:
                 #   <https://groups.google.com/forum/#!topic/python-tulip/yF9C-rFpiKk>
                 #   <https://bugs.python.org/issue28613>
-                await (sleep or asyncio.sleep)(seconds)
+                await sleep(seconds)
                 continue
             else:
                 await _call_handlers(on_success, **details, value=ret)
@@ -118,7 +118,7 @@ def retry_exception(target, wait_gen, exception,
                     *,
                     max_tries, max_time, jitter, giveup,
                     on_success, on_backoff, on_giveup, raise_on_giveup,
-                    sleep=None, monotonic_time=None,
+                    sleep=asyncio.sleep, monotonic_time=time.monotonic,
                     wait_gen_kwargs):
     on_success = _ensure_coroutines(on_success)
     on_backoff = _ensure_coroutines(on_backoff)
@@ -136,11 +136,11 @@ def retry_exception(target, wait_gen, exception,
         max_time_value = _maybe_call(max_time)
 
         tries = 0
-        start = (monotonic_time or time.monotonic)()
+        start = monotonic_time()
         wait = _init_wait_gen(wait_gen, wait_gen_kwargs)
         while True:
             tries += 1
-            elapsed = (monotonic_time or time.monotonic)() - start
+            elapsed = monotonic_time() - start
             details = {
                 "target": target,
                 "args": args,
@@ -182,7 +182,7 @@ def retry_exception(target, wait_gen, exception,
                 # See for details:
                 #   <https://groups.google.com/forum/#!topic/python-tulip/yF9C-rFpiKk>
                 #   <https://bugs.python.org/issue28613>
-                await (sleep or asyncio.sleep)(seconds)
+                await sleep(seconds)
             else:
                 await _call_handlers(on_success, **details)
 
