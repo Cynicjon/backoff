@@ -1,8 +1,6 @@
 # coding:utf-8
-import datetime
 import functools
 import time
-from datetime import timedelta
 
 from backoff._common import (_init_wait_gen, _maybe_call, _next_wait)
 
@@ -24,6 +22,8 @@ def retry_predicate(target, wait_gen, predicate,
                     *,
                     max_tries, max_time, jitter,
                     on_success, on_backoff, on_giveup,
+                    monotonic_time=None,
+                    sleep=None,
                     wait_gen_kwargs):
 
     @functools.wraps(target)
@@ -32,11 +32,11 @@ def retry_predicate(target, wait_gen, predicate,
         max_time_value = _maybe_call(max_time)
 
         tries = 0
-        start = datetime.datetime.now()
+        start = (monotonic_time or time.monotonic)()
         wait = _init_wait_gen(wait_gen, wait_gen_kwargs)
         while True:
             tries += 1
-            elapsed = timedelta.total_seconds(datetime.datetime.now() - start)
+            elapsed = (monotonic_time or time.monotonic)() - start
             details = {
                 "target": target,
                 "args": args,
@@ -65,7 +65,7 @@ def retry_predicate(target, wait_gen, predicate,
                 _call_handlers(on_backoff, **details,
                                value=ret, wait=seconds)
 
-                time.sleep(seconds)
+                (sleep or time.sleep)(seconds)
                 continue
             else:
                 _call_handlers(on_success, **details, value=ret)
@@ -80,6 +80,7 @@ def retry_exception(target, wait_gen, exception,
                     *,
                     max_tries, max_time, jitter, giveup,
                     on_success, on_backoff, on_giveup, raise_on_giveup,
+                    monotonic_time=None,
                     wait_gen_kwargs):
 
     @functools.wraps(target)
@@ -88,11 +89,11 @@ def retry_exception(target, wait_gen, exception,
         max_time_value = _maybe_call(max_time)
 
         tries = 0
-        start = datetime.datetime.now()
+        start = (monotonic_time or time.monotonic)()
         wait = _init_wait_gen(wait_gen, wait_gen_kwargs)
         while True:
             tries += 1
-            elapsed = timedelta.total_seconds(datetime.datetime.now() - start)
+            elapsed = (monotonic_time or time.monotonic)() - start
             details = {
                 "target": target,
                 "args": args,
@@ -124,7 +125,7 @@ def retry_exception(target, wait_gen, exception,
                 _call_handlers(on_backoff, **details, wait=seconds,
                                exception=e)
 
-                time.sleep(seconds)
+                (sleep or time.sleep)(seconds)
             else:
                 _call_handlers(on_success, **details)
 
