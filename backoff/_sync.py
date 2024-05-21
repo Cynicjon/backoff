@@ -81,6 +81,7 @@ def retry_exception(target, wait_gen, exception,
                     max_tries, max_time, jitter, giveup,
                     on_success, on_backoff, on_giveup, raise_on_giveup,
                     monotonic_time=None,
+                    sleep=None,
                     wait_gen_kwargs):
 
     @functools.wraps(target)
